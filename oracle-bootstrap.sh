@@ -10,7 +10,7 @@ export TMPDIR
 dnf install -y rsync python3-pip vim curl wget net-tools git open-vm-tools sudo mlocate bash-completion oracle-epel-release-el8
 
 ## Making sure that the pacakge exits before installing
-dnf install -y hyperv-daemons fish htop ruby ruby-devel ruby-irb tmux
+dnf install -y hyperv-daemons fish htop ruby ruby-devel ruby-irb tmux procfile
 
 mkdir -p /root/.ssh
 if [ -f "/root/.ssh/authorized_keys" ];then
