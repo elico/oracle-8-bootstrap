@@ -26,9 +26,11 @@ chown -R root:root /root
 
 chmod 700 /root/.ssh
 
-pip3 install wheel
+python3 -m pip install --upgrade pip
 
-pip3 install ansible
+python3 -m pip install wheel
+
+python3 -m pip install ansible
 
 echo 'export PATH=$PATH:$HOME/.local/bin:/usr/local/bin:/usr/local/sbin' |tee -a /etc/bashrc
 
