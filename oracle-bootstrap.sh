@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+KEYS_URL="https://gist.githubusercontent.com/elico/4bef9019a48488e6cda188c504e887f2/raw/2e66166a2c5487568d66a7d7763ce05b89576302/authorized_keys"
+
 ANSIBLE_TMP="/ansible-install-tmp"
 mkdir ${ANSIBLE_TMP}
 TMPDIR="${ANSIBLE_TMP}"
@@ -14,10 +16,10 @@ dnf install -y hyperv-daemons fish htop ruby ruby-devel ruby-irb rubygems rubyge
 
 mkdir -p /root/.ssh
 if [ -f "/root/.ssh/authorized_keys" ];then
-	wget https://gist.githubusercontent.com/elico/4bef9019a48488e6cda188c504e887f2/raw/8e2bf4a5b4b8645ee0605e7d099038d471a2fdc6/authorized_keys -O /root/.ssh/eliezer_keys
-	cat /root/.ssh/eliezer_keys >> /root/.ssh/authorized_keys
+  wget "${KEYS_URL}" -O /root/.ssh/eliezer_keys
+  cat /root/.ssh/eliezer_keys >> /root/.ssh/authorized_keys
 else
-	wget https://gist.githubusercontent.com/elico/4bef9019a48488e6cda188c504e887f2/raw/8e2bf4a5b4b8645ee0605e7d099038d471a2fdc6/authorized_keys -O /root/.ssh/authorized_keys
+  wget "${KEYS_URL}" -O /root/.ssh/authorized_keys
 fi
 
 chmod 600 /root/.ssh/authorized_keys
