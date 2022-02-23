@@ -20,7 +20,7 @@
 
   - name: "Installing basic Tools for system managment"
     dnf:
-      name: [ "nftables" , "iptstate", "conntrack", "sudo", "ruby" , "rsync" , "wget" , "curl" , "ipset" , "ipcalc" , "iptraf-ng" , "tcpdump" , "iftop" , "htop" , "dnsmasq" , "mlocate", "haproxy" ]
+      name: [ "nftables" , "iptstate", "conntrack", "sudo", "ruby" , "rsync" , "wget" , "curl" , "ipset" , "ipcalc" , "iptraf-ng" , "tcpdump" , "iftop" , "htop" , "dnsmasq" , "dhcp-server" , "mlocate", "haproxy" ]
       state: latest
       update_cache: yes
 
@@ -39,17 +39,15 @@
     shell: egrep "^include \"/etc/nftables/wan-nat.nft\"" /etc/nftables/main.nft || echo 'include "/etc/nftables/wan-nat.nft"' >> /etc/nftables/main.nft
     ignore_errors: yes
 
+  - name: "Adding main.nft to /etc/sysconfig/nftables.conf"
+    shell: egrep "^include \"/etc/nftables/main.nft\"" /etc/sysconfig/nftables.conf || echo 'include "/etc/nftables/main.nft"' >> /etc/sysconfig/nftables.conf
+    ignore_errors: yes
+
   - name: "Disabling and Stopping the service: firewalld"
     service:
       name: firewalld
       state: stopped
       enabled: no
-
-  - name: "Enabling and Restarting the service: nftables"
-    service:
-      name: nftables
-      state: restarted
-      enabled: yes
 
   - name: "Installing iptables+nftables+ipset persistent serivces"
     dnf:
@@ -69,15 +67,39 @@
       dest: "/etc/sysconfig/ip6tables"
       archive: yes
 
+  - name: "Enabling and Restarting the service: nftables"
+    service:
+      name: nftables
+      state: stopped
+      enabled: yes
+
   - name: "Enabling and Restarting the service: iptables"
     service:
       name: iptables
-      state: restarted
+      state: stopped
       enabled: yes
 
   - name: "Enabling and Restarting the service: ip6tables"
     service:
       name: ip6tables
-      state: restarted
+      state: stopped
+      enabled: yes
+
+  - name: "Enabling and Restarting the service: nftables"
+    service:
+      name: nftables
+      state: started
+      enabled: yes
+
+  - name: "Enabling and Restarting the service: iptables"
+    service:
+      name: iptables
+      state: started
+      enabled: yes
+
+  - name: "Enabling and Restarting the service: ip6tables"
+    service:
+      name: ip6tables
+      state: started
       enabled: yes
 

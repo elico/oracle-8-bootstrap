@@ -1,6 +1,6 @@
 #!/usr/sbin/nft -f
 
-flush ruleset
+#flush ruleset
 
 define wan1 = ether1
 define wan2 = ether2
