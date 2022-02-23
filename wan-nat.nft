@@ -1,0 +1,43 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+define wan1 = ether1
+define wan2 = ether2
+define wan3 = eth0
+define wan4 = eth1
+
+
+table inet filter {
+	chain input {
+		type filter hook input priority 0;
+	}
+	chain forward {
+		type filter hook forward priority 0;
+	}
+	chain output {
+		type filter hook output priority 0;
+	}
+}
+
+table ip nat {
+        chain PREROUTING {
+                type nat hook prerouting priority -100; policy accept;
+        }
+
+        chain INPUT {
+                type nat hook input priority 100; policy accept;
+        }
+
+        chain POSTROUTING {
+                type nat hook postrouting priority 100; policy accept;
+                oifname $wan1 counter packets 0 bytes 0 masquerade
+                oifname $wan2 counter packets 0 bytes 0 masquerade
+                oifname $wan3 counter packets 0 bytes 0 masquerade
+                oifname $wan4 counter packets 0 bytes 0 masquerade
+        }
+
+        chain OUTPUT {
+                type nat hook output priority -100; policy accept;
+        }
+}

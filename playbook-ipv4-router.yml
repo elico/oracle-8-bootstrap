@@ -1,0 +1,83 @@
+---
+- name: "Converting OS to Ipv4 router on Oracle Enterprise Linux 8"
+  hosts: localhost
+  connection: local 
+  tasks:
+
+  - sysctl:
+      name: net.ipv4.ip_forward
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+  - sysctl:
+      name: net.ipv4.ip_forward_use_pmtu
+      value: '1'
+      sysctl_set: yes
+      state: present
+      reload: yes
+
+  - name: "Installing basic Tools for system managment"
+    dnf:
+      name: [ "nftables" , "iptstate", "conntrack", "sudo", "ruby" , "rsync" , "wget" , "curl" , "ipset" , "ipcalc" , "iptraf-ng" , "tcpdump" , "iftop" , "htop" , "dnsmasq" , "mlocate", "haproxy" ]
+      state: latest
+      update_cache: yes
+
+  - name: "Resetting the currently Loaded iptables and ip6tables rules to default basic"
+    shell: |
+      /usr/sbin/iptables-restore < iptables_basic.v4
+      /usr/sbin/ip6tables-restore < iptables_basic.v6
+
+  - name: "Installing: basic wan-nat.conf for NAT"
+    synchronize:
+      src: "wan-nat.nft"
+      dest: "/etc/nftables/wan-nat.nft"
+      archive: yes
+
+  - name: "Adding wan-nat.nft to main.nft"
+    shell: egrep "^include \"/etc/nftables/wan-nat.nft\"" /etc/nftables/main.nft || echo 'include "/etc/nftables/wan-nat.nft"' >> /etc/nftables/main.nft
+    ignore_errors: yes
+
+  - name: "Disabling and Stopping the service: firewalld"
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+
+  - name: "Enabling and Restarting the service: nftables"
+    service:
+      name: nftables
+      state: restarted
+      enabled: yes
+
+  - name: "Installing iptables+nftables+ipset persistent serivces"
+    dnf:
+      name: [ "iptables-services", "ipset-service" ]
+      state: latest
+      update_cache: yes
+
+  - name: "Installing: /etc/sysconfig/iptables"
+    synchronize:
+      src: "iptables_basic.v4"
+      dest: "/etc/sysconfig/iptables"
+      archive: yes
+
+  - name: "Installing: /etc/sysconfig/ip6tables"
+    synchronize:
+      src: "iptables_basic.v6"
+      dest: "/etc/sysconfig/ip6tables"
+      archive: yes
+
+  - name: "Enabling and Restarting the service: iptables"
+    service:
+      name: iptables
+      state: restarted
+      enabled: yes
+
+  - name: "Enabling and Restarting the service: ip6tables"
+    service:
+      name: ip6tables
+      state: restarted
+      enabled: yes
+
