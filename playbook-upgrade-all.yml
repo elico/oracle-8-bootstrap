@@ -1,0 +1,10 @@
+---
+- name: "Upgradeing Oracle Enterprise Linux 8"
+  hosts: localhost
+  connection: local 
+  tasks:
+
+  - name: Upgrade all packages
+    dnf:
+      name: "*"
+      state: latest
