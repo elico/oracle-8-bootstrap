@@ -1,0 +1,76 @@
+---
+- name: "Installing Storage services on Oracle Enterprise Linux 8"
+  hosts: localhost
+  connection: local 
+  tasks:
+
+  - name: "Installing basic Tools for system managment"
+    dnf:
+      name: [ "targetd", "targetcli", "samba", "samba-client", "samba-winbind", "samba-winbind-clients", "cifs-utils", "gssproxy", "nfs-utils", "nfs4-acl-tools", "isns-utils", "cockpit", "cockpit-dashboard", "cockpit-doc", "cockpit-file-sharing", "cockpit-machines", "cockpit-packagekit", "cockpit-pcp", "cockpit-podman", "cockpit-session-recording", "cockpit-storaged", "cockpit-system", "cockpit-ws" ]
+      state: latest
+      update_cache: yes
+
+  - shell: (cat /etc/samba/smb.conf | sed '/^\[global\]/,/^\[homes\]/{//!b};d' | grep "include\ \=\ registry" ) || sed -i -e "s@\[global\]@[global]\n\tinclude = registry\n@g" /etc/samba/smb.conf
+
+  - name: "Enabing and starting the services"
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    with_items:
+      - cockpit.socket
+      - nfs-server.service
+      - smb.service
+      - nmb.service
+      - target.service
+
+  - ansible.posix.firewalld:
+      zone: public
+      service: cockpit
+      permanent: yes
+      state: enabled
+
+## NFS Services
+  - ansible.posix.firewalld:
+      zone: public
+      service: nfs
+      permanent: yes
+      state: enabled
+
+  - ansible.posix.firewalld:
+      zone: public
+      service: mountd
+      permanent: yes
+      state: enabled
+
+  - ansible.posix.firewalld:
+      zone: public
+      service: rpc-bind
+      permanent: yes
+      state: enabled
+
+## Samba Services
+  - ansible.posix.firewalld:
+      zone: public
+      service: samba
+      permanent: yes
+      state: enabled
+
+## Iscsi Services: TCP 860, TCP 3260
+  - ansible.posix.firewalld:
+      zone: public
+      service: iscsi-target
+      permanent: yes
+      state: enabled
+
+  - ansible.posix.firewalld:
+      zone: public
+      port: 860/tcp
+      permanent: yes
+      state: enabled
+
+
+## Disabling SELINUX
+  - name: Disable SELinux
+    ansible.posix.selinux:
+      state: disabled
